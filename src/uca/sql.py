@@ -2,7 +2,8 @@
 
 Models are written in BigQuery SQL with a few Jinja helpers:
 
-- ``{{ ref('model_name') }}``   another model's output table
+- ``{{ ref('name') }}``         another model's output table, or a raw table loaded
+                                into the same dataset (e.g. ``mind_raw_news``)
 - ``{{ source_events }}``       the GA4 events table (wildcard in BigQuery)
 - ``{{ table_suffix }}``        column used for the date filter on the source
 - ``{{ event_param(key, type) }}``, ``{{ is_known(expr) }}``, ``{{ week_start(expr) }}``,
@@ -26,7 +27,9 @@ from uca.config import Settings
 Target = Literal["bigquery", "duckdb"]
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-GA4_MODELS_DIR = REPO_ROOT / "sql" / "ga4"
+SQL_DIR = REPO_ROOT / "sql"
+# Model groups, in build order.
+GROUPS = ("ga4", "mind")
 
 # Values GA4 uses when a field is missing or hidden. '<Other>' and '(data deleted)'
 # come from Google's obfuscation of the public sample.
@@ -44,8 +47,11 @@ class Model:
         return self.path.read_text()
 
 
-def discover_models(models_dir: Path = GA4_MODELS_DIR) -> list[Model]:
-    """Models in build order. Files are named ``NN_model_name.sql``."""
+def discover_models(group: str = "ga4", models_dir: Path | None = None) -> list[Model]:
+    """A group's models in build order. Files are named ``NN_model_name.sql``."""
+    if group not in GROUPS:
+        raise ValueError(f"Unknown model group {group!r}; expected one of {GROUPS}")
+    models_dir = models_dir or SQL_DIR / group
     models = []
     for path in sorted(models_dir.glob("*.sql")):
         prefix, _, name = path.stem.partition("_")

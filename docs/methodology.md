@@ -1,7 +1,7 @@
 # Methodology
 
-How each GA4 metric is defined, and the decisions behind the definitions. MIND methodology
-will be added with the MIND models.
+How each metric is defined, and the decisions behind the definitions. GA4 sections come
+first; MIND is covered [below](#mind).
 
 ## Data limitations
 
@@ -141,3 +141,85 @@ long-term churn rate.
 A user's cohort is the week of their first session in the data. They are retained in week N
 if they had any session N weeks after that. Users already active before 1 Nov 2020 appear as
 new in the first weeks of the data, so the earliest cohorts are inflated.
+
+## MIND
+
+### MIND limitations
+
+Stated here, where the data is first used.
+
+- **No money.** MIND records what readers were shown and clicked. It has no revenue,
+  price or other monetary field, so no dollar figure is ever derived from it. "Expansion"
+  and "contraction" here always mean *engagement*, and the labels say so.
+- **A short window.** The impression log (MIND-small: train + dev splits) covers about one
+  week in November 2019. Trends are therefore day over day, not week over week, and
+  "disengaged" means a gap of days, not months.
+- **History has no timestamps.** Each reader's click history comes from the weeks
+  *before* the impression log, in order but without dates. It is used as a single "before"
+  period.
+- **Not the GA4 users.** MIND readers and GA4 shoppers are different people from different
+  companies. The two are never joined; they share definitions and reporting only.
+- **License.** Microsoft Research License Terms, non-commercial research use. The files are
+  kept out of the repository.
+- `dq_mind__summary` reports coverage: articles missing an abstract, shown articles missing
+  from `news.tsv`, readers with no history, and the exact start and end of the log.
+
+### Building blocks
+
+**Impression.** One page load where the reader was shown a list of articles, each marked
+clicked (`-1`) or not (`-0`). `impression_id` restarts in each split, so the key is
+split + id. Timestamps carry no time zone and are used as given.
+
+**Articles missing from `news.tsv`** are kept in counts under category `(unknown)`.
+
+### Engagement trend (`mart_mind__user_daily_engagement`, `mart_mind__user_engagement_trend`)
+
+The same logic as the GA4 revenue trend, applied to clicks per day:
+
+1. Sum each reader's clicks by day. Several impressions on one day become one daily total.
+2. **Safeguard:** readers active on only one day get `Insufficient history`.
+3. Compare each active day with the reader's previous active day: more than
+   `TREND_THRESHOLD` higher is **Engagement expansion**, more than `TREND_THRESHOLD` lower is
+   **Engagement contraction**, otherwise **Flat**; the first active day is **Baseline**.
+
+Days without any impression are skipped, as weeks without a purchase are for GA4.
+
+### Category performance (`mart_mind__category_performance`)
+
+Per category and subcategory: times shown, clicks, click-through rate (clicks ÷ times
+shown), readers shown and readers who clicked, plus clicks from readers' earlier history.
+This is the content equivalent of GA4 channel performance.
+
+### Topic drift (`mart_mind__topic_drift`)
+
+For each reader, the share of their clicks going to each category is compared across two
+periods: their history (before) and the impression log (during).
+
+- **share_change** = during share − before share, in share points.
+- **Drifting away:** share fell by at least `MIND_DRIFT_THRESHOLD` (default 0.20, i.e.
+  20 points). **Growing interest:** rose by at least that much. Otherwise **Stable**.
+- **drift_score** (0–1) = half the sum of absolute share changes across all categories:
+  0 means the same mix, 1 means no overlap at all.
+- Only readers with at least `MIND_MIN_CLICKS` (default 3) clicks in *both* periods are
+  scored, so one or two clicks cannot produce a dramatic "drift".
+
+"Which readers are drifting away from sports?" is then a filter: `category = 'sports' AND
+direction = 'Drifting away'`. The planned semantic layer will add finer topics from the
+article text.
+
+### Disengagement (`mart_mind__user_disengagement`)
+
+Measured at the last timestamp in the data. N = `MIND_DISENGAGED_DAYS` (default 2).
+
+- **Disengaged:** no impressions at all in the last N days.
+- **Passive:** still being shown articles in the last N days, but no clicks.
+- **Engaged:** clicked in the last N days.
+- **Insufficient history:** active on only one day. A single visit cannot be told apart
+  from an occasional reader, so no flag is given. This mirrors the GA4 trend safeguard.
+
+### Reads before disengaging (`mart_mind__pre_disengagement_reads`)
+
+For Disengaged and Passive readers: their 10 most recent clicked articles with title and
+abstract, clicks from the impression log first (newest first), then history. This is the
+text the AI layer will analyze to describe what these readers had in common before they
+dropped off.

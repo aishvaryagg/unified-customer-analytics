@@ -5,7 +5,7 @@ import pytest
 import sqlglot
 
 from uca.config import Settings
-from uca.sql import channel_group, clean_label, discover_models, render, to_duckdb
+from uca.sql import GROUPS, channel_group, clean_label, discover_models, render, to_duckdb
 
 BQ = Settings(gcp_project="demo-project", bq_dataset="marketing_analytics")
 
@@ -16,7 +16,15 @@ def test_models_are_discovered_in_build_order():
     assert len(names) == len(set(names))
 
 
-@pytest.mark.parametrize("model", discover_models(), ids=lambda m: m.name)
+ALL_MODELS = [m for group in GROUPS for m in discover_models(group)]
+
+
+def test_model_names_are_unique_across_groups():
+    names = [m.name for m in ALL_MODELS]
+    assert len(names) == len(set(names))
+
+
+@pytest.mark.parametrize("model", ALL_MODELS, ids=lambda m: m.name)
 def test_every_model_renders_valid_bigquery_sql(model):
     sql = render(model, "bigquery", BQ)
     assert "{{" not in sql and "{%" not in sql
