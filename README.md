@@ -46,7 +46,7 @@ flowchart TD
 | MIND download, loading and engagement models | Done, tested offline; not yet run on the real files |
 | Salesforce data model, metadata and load | Done, tested offline; not yet deployed to an org |
 | AI question router, self-correcting SQL and semantic search | Done, tested offline; not yet run against Claude or BigQuery |
-| Tableau / Looker Studio / Sheets reporting | Planned |
+| Reporting layer, Tableau / Looker Studio specs, Google Sheets summary | Done, tested offline; not yet connected to real accounts |
 
 ## GA4 models
 
@@ -133,6 +133,20 @@ uca ask "Which campaigns convert best, and how does first-touch revenue differ f
 uca ask "Which readers are drifting away from sports, and what were they reading?" --show-sql
 ```
 
+## Reporting
+
+`uca build reporting` builds a common reporting layer (`rpt_*` tables): KPIs, a
+side-by-side expansion/contraction view with shared labels, retention status, and weekly
+and daily time series. On top of it:
+
+- **Tableau:** dashboard specs and a colorblind-checked palette file (Desktop reads
+  BigQuery; Public uses `uca export-reporting` CSVs or the Google Sheet).
+- **Looker Studio:** reads the same tables live from BigQuery.
+- **Google Sheets:** an Apps Script that refreshes the tables weekly and writes a
+  plain-English summary for non-technical readers.
+
+Details: [docs/reporting.md](docs/reporting.md).
+
 ## Quickstart
 
 Requires Python 3.10+.
@@ -174,7 +188,7 @@ If the download fails, download MIND-small from [msnews.github.io](https://msnew
 `data/mind/train/{news,behaviors}.tsv` and `data/mind/dev/{news,behaviors}.tsv`.
 Set `MIND_VARIANT=large` for the full dataset (about 1 million readers).
 
-`uca build` with no group builds GA4, MIND and then the Salesforce tables.
+`uca build` with no group builds GA4, MIND, the Salesforce tables and then the reporting tables.
 
 ### Load Salesforce
 
@@ -207,6 +221,8 @@ sql/ga4/          GA4 models, numbered in build order (BigQuery SQL + Jinja help
 sql/mind/         MIND models, numbered in build order
 sql/salesforce/   GA4 results shaped into Salesforce objects
 src/uca/ai/       AI question layer: router, SQL guard, self-correcting SQL agent, semantic search
+sql/reporting/    Common reporting layer (rpt_* tables) for Tableau, Looker Studio and Sheets
+reporting/        Google Sheets Apps Script and the Tableau palette file
 salesforce/       Salesforce DX project: custom fields and permission set to deploy
 src/uca/          Python package: settings, SQL rendering, runners, MIND and Salesforce loaders, CLI
 tests/            Offline tests and the hand-built GA4 and MIND samples

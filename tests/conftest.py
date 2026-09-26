@@ -111,3 +111,10 @@ def warehouse(settings, tmp_path_factory):
     build_duckdb(con, settings, group="mind")
     yield con
     con.close()
+
+
+@pytest.fixture(scope="session")
+def reporting(warehouse, settings):
+    """The GA4 + MIND warehouse with the reporting models built on top."""
+    build_duckdb(warehouse, settings, group="reporting")
+    return warehouse

@@ -7,6 +7,7 @@
   uca sf-load                    load the sf_* tables into Salesforce
   uca build-embeddings           embed MIND article text for semantic search
   uca ask "question"             answer a plain-English question from the data
+  uca export-reporting           write the rpt_* tables to CSV for Tableau
 """
 
 from __future__ import annotations
@@ -42,6 +43,8 @@ def main(argv: list[str] | None = None) -> None:
     sub.add_parser("mind-load", help="Load downloaded MIND files into BigQuery")
     sub.add_parser("sf-load", help="Load the sf_* BigQuery tables into Salesforce")
     sub.add_parser("build-embeddings", help="Embed MIND article text in BigQuery")
+    p_export = sub.add_parser("export-reporting", help="Write the rpt_* tables to CSV files")
+    p_export.add_argument("--out", type=Path, default=Path("target/reporting"))
     p_ask = sub.add_parser("ask", help="Answer a plain-English question")
     p_ask.add_argument("question")
     p_ask.add_argument("--show-sql", action="store_true", help="Print each step's SQL")
@@ -79,6 +82,11 @@ def main(argv: list[str] | None = None) -> None:
         build_embeddings(settings)
     elif args.command == "ask":
         _ask(settings, args)
+    elif args.command == "export-reporting":
+        from uca.reporting import export_bigquery
+
+        for path in export_bigquery(settings, args.out):
+            print(path)
 
 
 def _ask(settings: Settings, args) -> None:
