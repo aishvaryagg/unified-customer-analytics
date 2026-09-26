@@ -43,7 +43,7 @@ flowchart TD
 |---|---|
 | Project setup, config, CLI, CI | Done |
 | GA4 marketing models (BigQuery SQL) | Done, tested offline; not yet run in BigQuery |
-| MIND ingestion and engagement models | Planned |
+| MIND download, loading and engagement models | Done, tested offline; not yet run on the real files |
 | Salesforce data model and load | Planned |
 | AI question router and semantic search | Planned |
 | Tableau / Looker Studio / Sheets reporting | Planned |
@@ -70,6 +70,26 @@ Built in this order from `sql/ga4/`. Full definitions are in
 | `mart_cohort_retention` | cohort week × week number | Weekly retention by acquisition cohort |
 | `dq_ga4__placeholder_share` | field | How much of each field is obfuscated or missing |
 
+## MIND models
+
+Built in this order from `sql/mind/`, after the raw files are loaded. These are
+engagement measures only: MIND has no revenue data. Definitions are in
+[docs/methodology.md](docs/methodology.md#mind).
+
+| Model | One row per | Answers |
+|---|---|---|
+| `stg_mind__news` | article | Category, subcategory, title, abstract, entities |
+| `stg_mind__impressions` | impression | When a reader was shown a list of articles |
+| `stg_mind__impression_items` | article shown | Whether the reader clicked it |
+| `stg_mind__history` | past click | What each reader clicked before the log started |
+| `mart_mind__user_daily_engagement` | reader × active day | Clicks, click-through rate, engagement expansion / contraction |
+| `mart_mind__user_engagement_trend` | reader | Each reader's totals and latest engagement trend |
+| `mart_mind__category_performance` | category × subcategory | Which content gets shown and clicked |
+| `mart_mind__topic_drift` | reader × category | Who is drifting away from (or toward) a category |
+| `mart_mind__user_disengagement` | reader | Engaged, Passive or Disengaged at the end of the log |
+| `mart_mind__pre_disengagement_reads` | at-risk reader × article | The last 10 articles at-risk readers clicked (input for the AI layer) |
+| `dq_mind__summary` | one row | Coverage and gaps in the MIND files |
+
 ## Quickstart
 
 Requires Python 3.10+.
@@ -91,31 +111,49 @@ pytest            # offline tests, no Google Cloud account needed
 4. Run:
 
 ```bash
-uca compile   # write the rendered BigQuery SQL to target/compiled/ga4/ for review
-uca build     # create the tables in GCP_PROJECT.marketing_analytics
-uca build --select mart_attribution   # rebuild one model (upstream tables must exist)
+uca compile ga4   # write the rendered BigQuery SQL to target/compiled/ga4/ for review
+uca build ga4     # create the tables in GCP_PROJECT.marketing_analytics
+uca build ga4 --select mart_attribution   # rebuild one model (upstream tables must exist)
 ```
 
 Each query is capped at `BQ_MAX_BYTES_BILLED` (50 GB by default) as a cost guard.
 
+### Load MIND and build its models
+
+```bash
+uca mind-download   # MIND-small train + dev into data/mind/ (git-ignored)
+uca mind-load       # load them into BigQuery as mind_raw_news and mind_raw_behaviors
+uca build mind      # build the MIND models
+```
+
+If the download fails, download MIND-small from [msnews.github.io](https://msnews.github.io/)
+(or its Kaggle mirror) and unzip each split so the files sit at
+`data/mind/train/{news,behaviors}.tsv` and `data/mind/dev/{news,behaviors}.tsv`.
+Set `MIND_VARIANT=large` for the full dataset (about 1 million readers).
+
+`uca build` with no group builds GA4 and then MIND.
+
 ## How the tests work
 
 The models are written once, in BigQuery SQL. For tests, each one is translated to DuckDB
-with [sqlglot](https://github.com/tobymao/sqlglot) and run against a small, hand-built GA4
-events table (`tests/ga4_fixture.py`) whose correct answers were worked out by hand. The
-tests check those answers exactly: duplicate purchases, attribution splits, trend labels,
-affinity scores, churn flags and cohort retention. A separate test checks that every model
-renders to valid BigQuery SQL.
+with [sqlglot](https://github.com/tobymao/sqlglot) and run against small, hand-built samples
+whose correct answers were worked out by hand: a GA4 events table (`tests/ga4_fixture.py`)
+and MIND TSV files in the real layout (`tests/mind_fixture.py`, loaded through the same
+reader used for the real files). The tests check those answers exactly: duplicate purchases,
+attribution splits, trend labels, affinity scores, churn flags, cohort retention, topic drift
+and disengagement. A separate test checks that every model renders to valid BigQuery SQL.
 
 Offline tests cannot catch everything that could differ in BigQuery itself, so the first
-real `uca build` should be reviewed alongside `dq_ga4__placeholder_share`.
+real `uca build` should be reviewed alongside `dq_ga4__placeholder_share` and
+`dq_mind__summary`.
 
 ## Project layout
 
 ```
 sql/ga4/          GA4 models, numbered in build order (BigQuery SQL + Jinja helpers)
-src/uca/          Python package: settings, SQL rendering, BigQuery/DuckDB runners, CLI
-tests/            Offline tests and the hand-built GA4 fixture
+sql/mind/         MIND models, numbered in build order
+src/uca/          Python package: settings, SQL rendering, runners, MIND loader, CLI
+tests/            Offline tests and the hand-built GA4 and MIND samples
 docs/             Methodology, definitions and data limitations
 ```
 

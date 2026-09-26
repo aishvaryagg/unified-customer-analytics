@@ -19,6 +19,11 @@ class Settings:
     ga4_end_date: str = "20210131"  # YYYYMMDD, inclusive; also the churn reference date
     churn_days: int = 30
     trend_threshold: float = 0.10
+    mind_variant: str = "small"  # "small" (50k users) or "large" (1M users)
+    mind_data_dir: str = "data/mind"
+    mind_disengaged_days: int = 2
+    mind_min_clicks: int = 3
+    mind_drift_threshold: float = 0.20
 
     @property
     def ga4_end_date_iso(self) -> str:
@@ -40,4 +45,9 @@ class Settings:
             ga4_end_date=env.get("GA4_END_DATE", default.ga4_end_date),
             churn_days=int(env.get("CHURN_DAYS", default.churn_days)),
             trend_threshold=float(env.get("TREND_THRESHOLD", default.trend_threshold)),
+            mind_variant=env.get("MIND_VARIANT", default.mind_variant),
+            mind_data_dir=env.get("MIND_DATA_DIR", default.mind_data_dir),
+            mind_disengaged_days=int(env.get("MIND_DISENGAGED_DAYS", default.mind_disengaged_days)),
+            mind_min_clicks=int(env.get("MIND_MIN_CLICKS", default.mind_min_clicks)),
+            mind_drift_threshold=float(env.get("MIND_DRIFT_THRESHOLD", default.mind_drift_threshold)),
         )
