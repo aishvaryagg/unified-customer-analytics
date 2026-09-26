@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+
+# Secrets and local config
+.env
+*.json.key
+service-account*.json
+credentials*.json
+
+# Datasets: never commit raw or derived data.
+# MIND is licensed for non-commercial research use only and must not be redistributed.
+data/
+*.tsv
+*.parquet
+*.duckdb
+*.csv
+
+# Build output
+target/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
