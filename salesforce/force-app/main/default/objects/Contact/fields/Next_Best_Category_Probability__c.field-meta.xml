@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Next_Best_Category_Probability__c</fullName>
+    <description>How often customers with the same last purchase went on to buy the next best category.</description>
+    <inlineHelpText>How often customers with the same last purchase went on to buy the next best category.</inlineHelpText>
+    <label>Next Best Category Probability</label>
+    <precision>5</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackTrending>false</trackTrending>
+    <type>Percent</type>
+</CustomField>

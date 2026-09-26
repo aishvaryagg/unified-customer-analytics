@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>RFM_Segment__c</fullName>
+    <description>Champion, Recent customer, At-risk high value or Lapsing customer.</description>
+    <inlineHelpText>Champion, Recent customer, At-risk high value or Lapsing customer.</inlineHelpText>
+    <label>RFM Segment</label>
+    <length>40</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+</CustomField>

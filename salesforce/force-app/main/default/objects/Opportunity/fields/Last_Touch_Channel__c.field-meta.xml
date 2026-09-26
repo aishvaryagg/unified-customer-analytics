@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Last_Touch_Channel__c</fullName>
+    <description>Channel of the session the order was placed in.</description>
+    <inlineHelpText>Channel of the session the order was placed in.</inlineHelpText>
+    <label>Last Touch Channel</label>
+    <length>40</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+</CustomField>

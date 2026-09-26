@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>GA4_Transaction_Id__c</fullName>
+    <caseSensitive>false</caseSensitive>
+    <description>GA4 transaction id (or event id when GA4 recorded none). Used for upserts.</description>
+    <externalId>true</externalId>
+    <inlineHelpText>GA4 transaction id (or event id when GA4 recorded none). Used for upserts.</inlineHelpText>
+    <label>GA4 Transaction ID</label>
+    <length>255</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>true</unique>
+</CustomField>

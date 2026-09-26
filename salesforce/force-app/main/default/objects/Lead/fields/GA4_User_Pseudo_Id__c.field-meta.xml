@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>GA4_User_Pseudo_Id__c</fullName>
+    <caseSensitive>false</caseSensitive>
+    <description>GA4's anonymous user id (user_pseudo_id). Used for upserts. No personal data is stored.</description>
+    <externalId>true</externalId>
+    <inlineHelpText>GA4's anonymous user id (user_pseudo_id). Used for upserts. No personal data is stored.</inlineHelpText>
+    <label>GA4 User Pseudo ID</label>
+    <length>100</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>true</unique>
+</CustomField>

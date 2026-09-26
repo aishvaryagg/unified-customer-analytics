@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Acquisition_Channel__c</fullName>
+    <description>Channel that first acquired this user in GA4 (first touch).</description>
+    <inlineHelpText>Channel that first acquired this user in GA4 (first touch).</inlineHelpText>
+    <label>Acquisition Channel</label>
+    <length>40</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+</CustomField>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>GA4_Account_Key__c</fullName>
+    <caseSensitive>false</caseSensitive>
+    <description>Stable key for the house account that holds GA4 online customers. Used for upserts.</description>
+    <externalId>true</externalId>
+    <inlineHelpText>Stable key for the house account that holds GA4 online customers. Used for upserts.</inlineHelpText>
+    <label>GA4 Account Key</label>
+    <length>80</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>true</unique>
+</CustomField>

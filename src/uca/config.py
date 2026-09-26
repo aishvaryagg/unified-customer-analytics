@@ -24,6 +24,15 @@ class Settings:
     mind_disengaged_days: int = 2
     mind_min_clicks: int = 3
     mind_drift_threshold: float = 0.20
+    # A Developer Edition org holds about 5 MB of data (~2,500 records), so only a sample
+    # of people goes to Salesforce. Their orders and campaign memberships come with them.
+    sf_max_contacts: int = 400
+    sf_max_leads: int = 200
+    llm_model: str = "claude-opus-5"
+    ai_max_sql_attempts: int = 3
+    ai_max_rows: int = 200
+    # BigQuery remote model (in BQ_DATASET) that embeds MIND article text.
+    mind_embedding_model: str = "mind_text_embedding"
 
     @property
     def ga4_end_date_iso(self) -> str:
@@ -50,4 +59,10 @@ class Settings:
             mind_disengaged_days=int(env.get("MIND_DISENGAGED_DAYS", default.mind_disengaged_days)),
             mind_min_clicks=int(env.get("MIND_MIN_CLICKS", default.mind_min_clicks)),
             mind_drift_threshold=float(env.get("MIND_DRIFT_THRESHOLD", default.mind_drift_threshold)),
+            sf_max_contacts=int(env.get("SF_MAX_CONTACTS", default.sf_max_contacts)),
+            sf_max_leads=int(env.get("SF_MAX_LEADS", default.sf_max_leads)),
+            llm_model=env.get("UCA_LLM_MODEL", default.llm_model),
+            ai_max_sql_attempts=int(env.get("AI_MAX_SQL_ATTEMPTS", default.ai_max_sql_attempts)),
+            ai_max_rows=int(env.get("AI_MAX_ROWS", default.ai_max_rows)),
+            mind_embedding_model=env.get("MIND_EMBEDDING_MODEL", default.mind_embedding_model),
         )
