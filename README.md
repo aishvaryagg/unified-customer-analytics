@@ -35,7 +35,7 @@ flowchart TD
 | CRM | Salesforce Developer Edition |
 | Dashboards | Tableau, Looker Studio |
 | Stakeholder report | Google Sheets + Apps Script |
-| AI question layer | LLM API |
+| AI question layer | Claude (Anthropic API) |
 
 ## Status
 
@@ -45,7 +45,7 @@ flowchart TD
 | GA4 marketing models (BigQuery SQL) | Done, tested offline; not yet run in BigQuery |
 | MIND download, loading and engagement models | Done, tested offline; not yet run on the real files |
 | Salesforce data model, metadata and load | Done, tested offline; not yet deployed to an org |
-| AI question router and semantic search | Planned |
+| AI question router, self-correcting SQL and semantic search | Done, tested offline; not yet run against Claude or BigQuery |
 | Tableau / Looker Studio / Sheets reporting | Planned |
 
 ## GA4 models
@@ -120,6 +120,19 @@ people is loaded (400 contacts and 200 leads by default, with their orders and c
 memberships). Campaign figures still cover everyone. The records are pseudonymous: GA4 has
 no names or emails, and none are invented.
 
+## AI questions
+
+`uca ask "<question>"` answers plain-English questions. Claude plans the steps, writes
+BigQuery SQL that is checked before it runs (read-only, mart tables only, row-capped) and
+corrected automatically when it fails, searches MIND articles by meaning, and writes an
+answer from the results. GA4 and MIND are reported side by side, never joined. Details:
+[docs/ai.md](docs/ai.md).
+
+```bash
+uca ask "Which campaigns convert best, and how does first-touch revenue differ from last-touch?"
+uca ask "Which readers are drifting away from sports, and what were they reading?" --show-sql
+```
+
 ## Quickstart
 
 Requires Python 3.10+.
@@ -193,6 +206,7 @@ real `uca build` should be reviewed alongside `dq_ga4__placeholder_share` and
 sql/ga4/          GA4 models, numbered in build order (BigQuery SQL + Jinja helpers)
 sql/mind/         MIND models, numbered in build order
 sql/salesforce/   GA4 results shaped into Salesforce objects
+src/uca/ai/       AI question layer: router, SQL guard, self-correcting SQL agent, semantic search
 salesforce/       Salesforce DX project: custom fields and permission set to deploy
 src/uca/          Python package: settings, SQL rendering, runners, MIND and Salesforce loaders, CLI
 tests/            Offline tests and the hand-built GA4 and MIND samples

@@ -95,3 +95,19 @@ def sf_full():
     build_duckdb(con, settings, group="salesforce")
     yield con
     con.close()
+
+
+@pytest.fixture(scope="session")
+def warehouse(settings, tmp_path_factory):
+    """One DuckDB connection with both the GA4 and the MIND models built (like BigQuery)."""
+    import mind_fixture
+    from uca.mind import load_duckdb
+
+    con = duckdb.connect()
+    con.execute("SET TimeZone = 'UTC'")
+    load(con)
+    build_duckdb(con, settings)
+    load_duckdb(con, mind_fixture.write(tmp_path_factory.mktemp("mind-ai")))
+    build_duckdb(con, settings, group="mind")
+    yield con
+    con.close()
