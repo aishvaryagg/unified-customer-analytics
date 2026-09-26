@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Recency_Score__c</fullName>
+    <description>1-5, 5 = bought most recently (among purchasers).</description>
+    <inlineHelpText>1-5, 5 = bought most recently (among purchasers).</inlineHelpText>
+    <label>Recency Score</label>
+    <precision>1</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+</CustomField>

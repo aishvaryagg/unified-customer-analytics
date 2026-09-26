@@ -4,6 +4,7 @@
   uca build [ga4|mind|all]       build models as BigQuery tables
   uca mind-download              download MIND into MIND_DATA_DIR
   uca mind-load                  load the downloaded MIND files into BigQuery
+  uca sf-load                    load the sf_* tables into Salesforce
 """
 
 from __future__ import annotations
@@ -37,6 +38,7 @@ def main(argv: list[str] | None = None) -> None:
 
     sub.add_parser("mind-download", help="Download MIND train and dev splits")
     sub.add_parser("mind-load", help="Load downloaded MIND files into BigQuery")
+    sub.add_parser("sf-load", help="Load the sf_* BigQuery tables into Salesforce")
 
     args = parser.parse_args(argv)
     settings = Settings.from_env()
@@ -58,6 +60,12 @@ def main(argv: list[str] | None = None) -> None:
         from uca.mind import load_bigquery
 
         load_bigquery(settings)
+    elif args.command == "sf-load":
+        from uca.salesforce import load_from_bigquery
+
+        results = load_from_bigquery(settings)
+        if any(r.errors for r in results):
+            raise SystemExit(1)
 
 
 if __name__ == "__main__":

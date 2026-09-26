@@ -42,3 +42,56 @@ def mind(settings, tmp_path_factory):
     build_duckdb(con, settings, group="mind")
     yield con
     con.close()
+
+
+@pytest.fixture(scope="session")
+def sf():
+    """GA4 fixture plus three extra visitors, with the GA4 and Salesforce models built.
+
+    u5  adds to cart, never buys          -> Lead, Highest_Funnel_Stage 'Add to cart'
+    u6  starts checkout, never buys       -> Lead, 'Checkout'
+    u7  only views a page                 -> neither
+    Samples are capped at 2 contacts and 1 lead to exercise the sampling.
+    """
+    import ga4_fixture
+    from ga4_fixture import _item, _session
+
+    ga4_fixture.FIRST_TOUCH.update({
+        "u5": ("google", "cpc", "winter_sale"),
+        "u6": ("newsletter", "email", "nov_newsletter"),
+        "u7": ("(direct)", "(none)", "(direct)"),
+    })
+    extra = []
+    extra += _session("u5", "2020-12-10", 5001, 1, [
+        (0, "view_item", {"items": [_item("A", 10)]}),
+        (1, "add_to_cart", {"items": [_item("A", 10)]}),
+    ], source="google", medium="cpc", campaign="winter_sale")
+    extra += _session("u6", "2021-01-20", 6001, 1, [
+        (0, "view_item", {"items": [_item("C", 25)]}),
+        (1, "add_to_cart", {"items": [_item("C", 25)]}),
+        (2, "begin_checkout", {"items": [_item("C", 25)]}),
+    ], source="newsletter", medium="email", campaign="nov_newsletter")
+    extra += _session("u7", "2021-01-05", 7001, 1, [(0, "page_view", {})])
+
+    settings = Settings(sf_max_contacts=2, sf_max_leads=1)
+    con = duckdb.connect()
+    con.execute("SET TimeZone = 'UTC'")
+    load(con)
+    con.executemany("INSERT INTO ga4_events VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", extra)
+    build_duckdb(con, settings)
+    build_duckdb(con, settings, group="salesforce")
+    yield con
+    con.close()
+
+
+@pytest.fixture(scope="session")
+def sf_full():
+    """Plain GA4 fixture with the Salesforce models built and no sampling cap."""
+    con = duckdb.connect()
+    con.execute("SET TimeZone = 'UTC'")
+    load(con)
+    settings = Settings()
+    build_duckdb(con, settings)
+    build_duckdb(con, settings, group="salesforce")
+    yield con
+    con.close()

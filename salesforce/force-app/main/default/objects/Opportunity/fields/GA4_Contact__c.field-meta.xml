@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>GA4_Contact__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>The customer who placed this order.</description>
+    <inlineHelpText>The customer who placed this order.</inlineHelpText>
+    <label>GA4 Contact</label>
+    <referenceTo>Contact</referenceTo>
+    <relationshipLabel>GA4 Orders</relationshipLabel>
+    <relationshipName>GA4_Orders</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

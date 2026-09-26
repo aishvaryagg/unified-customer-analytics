@@ -44,7 +44,7 @@ flowchart TD
 | Project setup, config, CLI, CI | Done |
 | GA4 marketing models (BigQuery SQL) | Done, tested offline; not yet run in BigQuery |
 | MIND download, loading and engagement models | Done, tested offline; not yet run on the real files |
-| Salesforce data model and load | Planned |
+| Salesforce data model, metadata and load | Done, tested offline; not yet deployed to an org |
 | AI question router and semantic search | Planned |
 | Tableau / Looker Studio / Sheets reporting | Planned |
 
@@ -90,6 +90,36 @@ engagement measures only: MIND has no revenue data. Definitions are in
 | `mart_mind__pre_disengagement_reads` | at-risk reader × article | The last 10 articles at-risk readers clicked (input for the AI layer) |
 | `dq_mind__summary` | one row | Coverage and gaps in the MIND files |
 
+## Salesforce
+
+GA4 results are pushed into a Salesforce Developer Edition org so marketing results sit
+next to CRM records. Details and the full field list: [docs/salesforce.md](docs/salesforce.md).
+
+```mermaid
+erDiagram
+    Account ||--o{ Contact : "house account"
+    Account ||--o{ Opportunity : "owns"
+    Contact ||--o{ Opportunity : "GA4_Contact__c"
+    Campaign ||--o{ Opportunity : "Primary Campaign Source (last touch)"
+    Campaign ||--o{ CampaignMember : "has members"
+    Contact ||--o{ CampaignMember : "responds as"
+    Lead ||--o{ CampaignMember : "responds as"
+```
+
+| Salesforce object | From GA4 | Built by |
+|---|---|---|
+| Campaign | Each channel + campaign, with sessions, users, orders, revenue and conversion rate from **all** GA4 data | `sf_campaigns` |
+| Contact | Purchasers: RFM scores and segment, revenue trend, churn flags, next best category | `sf_contacts` |
+| Lead | Non-purchasers who added to cart or started checkout | `sf_leads` |
+| Opportunity | Each order, Closed Won, with last-touch campaign and first/last-touch channels | `sf_opportunities` |
+| CampaignMember | Which campaigns each person arrived through (Responded / Sent) | `sf_campaign_members` |
+| Account | One house account for all online customers | `sf_accounts` |
+
+A Developer Edition org holds only about 5 MB (~2,500 records), so a repeatable sample of
+people is loaded (400 contacts and 200 leads by default, with their orders and campaign
+memberships). Campaign figures still cover everyone. The records are pseudonymous: GA4 has
+no names or emails, and none are invented.
+
 ## Quickstart
 
 Requires Python 3.10+.
@@ -131,7 +161,17 @@ If the download fails, download MIND-small from [msnews.github.io](https://msnew
 `data/mind/train/{news,behaviors}.tsv` and `data/mind/dev/{news,behaviors}.tsv`.
 Set `MIND_VARIANT=large` for the full dataset (about 1 million readers).
 
-`uca build` with no group builds GA4 and then MIND.
+`uca build` with no group builds GA4, MIND and then the Salesforce tables.
+
+### Load Salesforce
+
+See [docs/salesforce.md](docs/salesforce.md#setup) for the one-time org setup (deploying
+the custom fields and assigning the permission set). Then:
+
+```bash
+uca build salesforce   # shape GA4 results into sf_* tables in BigQuery
+uca sf-load            # upsert them into Salesforce (safe to re-run)
+```
 
 ## How the tests work
 
@@ -152,7 +192,9 @@ real `uca build` should be reviewed alongside `dq_ga4__placeholder_share` and
 ```
 sql/ga4/          GA4 models, numbered in build order (BigQuery SQL + Jinja helpers)
 sql/mind/         MIND models, numbered in build order
-src/uca/          Python package: settings, SQL rendering, runners, MIND loader, CLI
+sql/salesforce/   GA4 results shaped into Salesforce objects
+salesforce/       Salesforce DX project: custom fields and permission set to deploy
+src/uca/          Python package: settings, SQL rendering, runners, MIND and Salesforce loaders, CLI
 tests/            Offline tests and the hand-built GA4 and MIND samples
 docs/             Methodology, definitions and data limitations
 ```

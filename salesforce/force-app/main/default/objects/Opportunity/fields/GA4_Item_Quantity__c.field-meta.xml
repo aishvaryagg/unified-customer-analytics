@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>GA4_Item_Quantity__c</fullName>
+    <description>Number of items in the order.</description>
+    <inlineHelpText>Number of items in the order.</inlineHelpText>
+    <label>GA4 Item Quantity</label>
+    <precision>18</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+</CustomField>

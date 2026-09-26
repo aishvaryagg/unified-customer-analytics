@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Revenue_Trend__c</fullName>
+    <description>Latest week-over-week revenue label: Expansion, Contraction, Flat, Baseline or Insufficient history.</description>
+    <inlineHelpText>Latest week-over-week revenue label: Expansion, Contraction, Flat, Baseline or Insufficient history.</inlineHelpText>
+    <label>Revenue Trend</label>
+    <length>40</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+</CustomField>

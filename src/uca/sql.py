@@ -29,7 +29,7 @@ Target = Literal["bigquery", "duckdb"]
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SQL_DIR = REPO_ROOT / "sql"
 # Model groups, in build order.
-GROUPS = ("ga4", "mind")
+GROUPS = ("ga4", "mind", "salesforce")  # salesforce reads the ga4 models
 
 # Values GA4 uses when a field is missing or hidden. '<Other>' and '(data deleted)'
 # come from Google's obfuscation of the public sample.
